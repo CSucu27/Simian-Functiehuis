@@ -140,7 +140,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="logo"><span>Simian B.V.</span> — Functiehuis</div>
   <div class="nav-tabs">
     <button class="tab-btn active" onclick="switchTab('plattegrond',this)">Plattegrond</button>
-    <button class="tab-btn" onclick="switchTab('salarishuis',this)">Salarishuis</button>
+    <button class="tab-btn" onclick="switchTab('salarishuis',this)">Salaris & Schalen</button>
     <button class="tab-btn" onclick="switchTab('admin',this)">Beheer</button>
   </div>
 </div>
@@ -443,9 +443,9 @@ function renderDetail(funcId){
       </div>
       <div id="pane-salaris" class="pane">
         <div class="sal-grid">
-          <div class="sal-box"><span>Minimum</span><strong>€${Number(s.min).toLocaleString('nl-NL')}</strong></div>
-          <div class="sal-box mid"><span>Middelpunt</span><strong>€${Number(s.mid).toLocaleString('nl-NL')}</strong></div>
-          <div class="sal-box"><span>Maximum</span><strong>€${Number(s.max).toLocaleString('nl-NL')}</strong></div>
+          <div class="sal-box"><span>Aanloop</span><strong>€${Number(s.min).toLocaleString('nl-NL')}</strong></div>
+          <div class="sal-box mid"><span>Begin schaal</span><strong>€${Number(s.mid).toLocaleString('nl-NL')}</strong></div>
+          <div class="sal-box"><span>Einde schaal</span><strong>€${Number(s.max).toLocaleString('nl-NL')}</strong></div>
         </div>
         <div class="field"><label>Salarisschaal</label><p>${s.label}</p></div>
         <div class="sh-visual">${shRows}</div>
@@ -476,23 +476,51 @@ function switchPane(name,btn){
 }
 
 // ---- SALARISHUIS ----
+const CAO_UUR={A:{aanloop:14.71,begin:14.71,max:15.44},B:{aanloop:14.71,begin:14.71,max:16.32},C:{aanloop:14.71,begin:14.88,max:17.35},D:{aanloop:14.71,begin:15.55,max:18.44},E:{aanloop:14.71,begin:16.30,max:19.70},F:{aanloop:14.71,begin:17.24,max:21.31},G:{aanloop:14.71,begin:18.23,max:23.22},H:{aanloop:15.14,begin:19.58,max:25.89},I:{aanloop:16.39,begin:21.24,max:29.13},J:{aanloop:19.90,begin:23.48,max:33.45},K:{aanloop:22.35,begin:26.38,max:38.92}};
+const CAO_GROEP={A:1,B:2,C:3,D:4,E:4,F:5,G:6,H:7,I:8,J:9,K:10};
 function renderSalarishuis(){
   const c=document.getElementById('sh-body');
-  c.innerHTML='<div class="sh-overview">'+schalen.map(s=>{
+  const fmt=(n)=>Number(n).toLocaleString('nl-NL',{minimumFractionDigits:2,maximumFractionDigits:2});
+  // CAO tabel header
+  let html=`<div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;margin-bottom:20px">
+    <div style="background:var(--navy);color:#fff;padding:14px 20px">
+      <div style="font-size:14px;font-weight:700">Salarisschalen Grafimedia CAO — Inschalingstabel Operations</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:3px">Bron: CAO Grafimedia · Bedragen per maand (bruto)</div>
+    </div>
+    <div style="overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead>
+        <tr style="background:#f8f9fa">
+          <th style="padding:10px 14px;text-align:left;color:#888;font-size:11px;border-bottom:1px solid #e5e7eb">Groep</th>
+          <th style="padding:10px 14px;text-align:left;color:#888;font-size:11px;border-bottom:1px solid #e5e7eb">Schaal</th>
+          <th style="padding:10px 14px;text-align:right;color:#888;font-size:11px;border-bottom:1px solid #e5e7eb">Aanloop / mnd</th>
+          <th style="padding:10px 14px;text-align:right;color:#888;font-size:11px;border-bottom:1px solid #e5e7eb">Begin schaal / mnd</th>
+          <th style="padding:10px 14px;text-align:right;color:#888;font-size:11px;border-bottom:1px solid #e5e7eb">Einde schaal / mnd</th>
+          <th style="padding:10px 14px;text-align:right;color:#888;font-size:11px;border-bottom:1px solid #e5e7eb">Aanloop / uur</th>
+          <th style="padding:10px 14px;text-align:right;color:#888;font-size:11px;border-bottom:1px solid #e5e7eb">Begin schaal / uur</th>
+          <th style="padding:10px 14px;text-align:right;color:#888;font-size:11px;border-bottom:1px solid #e5e7eb">Einde schaal / uur</th>
+          <th style="padding:10px 14px;text-align:left;color:#888;font-size:11px;border-bottom:1px solid #e5e7eb">Functies</th>
+        </tr>
+      </thead>
+      <tbody>`;
+  schalen.forEach(s=>{
+    const u=CAO_UUR[s.id]||{aanloop:0,begin:0,max:0};
+    const g=CAO_GROEP[s.id]||'-';
     const fns=functies.filter(f=>f.schaal_id===s.id);
-    return`<div class="sh-card">
-      <div class="sh-card-title">${s.label}</div>
-      <div class="sh-card-range">€${Number(s.min).toLocaleString('nl-NL')} – €${Number(s.max).toLocaleString('nl-NL')} &nbsp;·&nbsp; middelpunt €${Number(s.mid).toLocaleString('nl-NL')}</div>
-      <div class="sal-grid">
-        <div class="sal-box"><span>Min</span><strong>€${Number(s.min).toLocaleString('nl-NL')}</strong></div>
-        <div class="sal-box mid"><span>Mid</span><strong>€${Number(s.mid).toLocaleString('nl-NL')}</strong></div>
-        <div class="sal-box"><span>Max</span><strong>€${Number(s.max).toLocaleString('nl-NL')}</strong></div>
-      </div>
-      ${fns.length
-        ?'<div style="margin-top:8px">'+fns.map(f=>`<span class="sh-func-tag" onclick="goToFunc('${f.id}')">${f.naam}</span>`).join('')+'</div>'
-        :'<p style="font-size:11px;color:#ccc;margin-top:8px">Geen functies gekoppeld aan deze schaal.</p>'}
-    </div>`;
-  }).join('')+'</div>';
+    html+=`<tr style="border-bottom:1px solid #f5f5f5">
+      <td style="padding:10px 14px;color:#aaa;font-size:11px">${g}</td>
+      <td style="padding:10px 14px;font-weight:700;color:var(--navy)">${s.label}</td>
+      <td style="padding:10px 14px;text-align:right;color:#1a1a1a">€ ${fmt(s.min)}</td>
+      <td style="padding:10px 14px;text-align:right;font-weight:700;color:var(--navy)">€ ${fmt(s.mid)}</td>
+      <td style="padding:10px 14px;text-align:right;color:#1a1a1a">€ ${fmt(s.max)}</td>
+      <td style="padding:10px 14px;text-align:right;color:#888">€ ${fmt(u.aanloop)}</td>
+      <td style="padding:10px 14px;text-align:right;color:#888">€ ${fmt(u.begin)}</td>
+      <td style="padding:10px 14px;text-align:right;color:#888">€ ${fmt(u.max)}</td>
+      <td style="padding:10px 14px">${fns.length?fns.map(f=>`<span class="sh-func-tag" onclick="goToFunc('${f.id}')">${f.naam}</span>`).join(''):'<span style="font-size:11px;color:#ccc">—</span>'}</td>
+    </tr>`;
+  });
+  html+=`</tbody></table></div></div>`;
+  c.innerHTML=html;
 }
 
 function goToFunc(id){
