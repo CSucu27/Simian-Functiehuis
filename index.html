@@ -30,7 +30,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
 /* Level indicator */
 .level-bar{display:flex;gap:0;margin-bottom:16px;border-radius:8px;overflow:hidden;border:1px solid #e5e7eb}
-.lv-item{flex:1;padding:9px 8px;text-align:center;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#ccc;background:#fff;border-right:1px solid #f0f0f0;transition:.2s}
+.lv-item{flex:1;padding:9px 8px;text-align:center;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#ccc;background:#fff;border-right:1px solid #f0f0f0;transition:.2s;border-top:0;border-bottom:0;border-left:0;cursor:pointer;font-family:inherit}
 .lv-item:last-child{border-right:0}
 .lv-item.done{background:#f8f9fa;color:var(--navy2)}
 .lv-item.active{background:var(--navy);color:var(--yellow)}
@@ -150,12 +150,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <!-- PLATTEGROND -->
   <div id="tab-plattegrond" class="section active">
     <div class="level-bar">
-      <div class="lv-item active" id="lv0">Organisatie</div>
-      <div class="lv-item" id="lv1">Kostenplaats</div>
-      <div class="lv-item" id="lv2">Afdeling</div>
-      <div class="lv-item" id="lv3">Functies</div>
-      <div class="lv-item" id="lv4">Detail</div>
+      <button class="lv-item active" id="lv0" onclick="navToLevel(0)">Organisatie</button>
+      <button class="lv-item" id="lv1" onclick="navToLevel(1)">Kostenplaats</button>
+      <button class="lv-item" id="lv2" onclick="navToLevel(2)">Afdeling</button>
+      <button class="lv-item" id="lv3" onclick="navToLevel(3)">Functies</button>
+      <button class="lv-item" id="lv4" onclick="navToLevel(4)">Detail</button>
     </div>
+    <button id="back-btn" onclick="navBack()" style="display:none;background:var(--navy);color:#fff;border:none;padding:7px 16px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:12px">← Terug</button>
     <div class="bc-wrap" id="bc-wrap">
       <span class="bc-label">Locatie</span>
       <span class="cur">Simian B.V.</span>
@@ -235,7 +236,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 // ============================================================
 // CONFIGURATIE — vul jouw Apps Script Web App URL in
 // ============================================================
-const API_URL = 'https://script.google.com/macros/s/AKfycbxNL1_76NR2RCsa75WWx_aUpKOUAXlWkE2QYxfw5xVqz_BdzAQ-i96V39IyLK-WCko5/exec';
+const API_URL = 'JOUW_APPS_SCRIPT_URL_HIER';
 // ============================================================
 
 const COMPETENCIES = [
@@ -281,6 +282,9 @@ async function init(){
 }
 
 // ---- LEVEL BAR ----
+function showBackBtn(show){ const b=document.getElementById("back-btn"); if(b) b.style.display=show?"inline-block":"none"; }
+function navBack(){ if(nav.func) renderFuncties(nav.afd.id); else if(nav.afd) renderAfdelingen(nav.kp.id); else if(nav.kp) renderOrganisatie(); }
+function navToLevel(n){ if(n===0) renderOrganisatie(); else if(n===1&&nav.kp) renderAfdelingen(nav.kp.id); else if(n===2&&nav.afd) renderFuncties(nav.afd.id); else if(n===3&&nav.func) renderDetail(nav.func.id); }
 function setLevel(n){
   ['lv0','lv1','lv2','lv3','lv4'].forEach((id,i)=>{
     const el=document.getElementById(id);
@@ -303,7 +307,7 @@ function setBc(items){
 
 // ---- VIEW: ORGANISATIE (kostenplaatsen) ----
 function renderOrganisatie(){
-  nav={kp:null,afd:null,func:null};
+  nav={kp:null,afd:null,func:null}; showBackBtn(false);
   setLevel(0);
   setBc([{label:'Simian B.V.'}]);
   const c=document.getElementById('plat-content');
@@ -328,7 +332,7 @@ function renderOrganisatie(){
 
 // ---- VIEW: AFDELINGEN ----
 function renderAfdelingen(kpId){
-  nav.kp=kostenplaatsen.find(k=>k.id===kpId);
+  nav.kp=kostenplaatsen.find(k=>k.id===kpId); showBackBtn(true);
   setLevel(1);
   setBc([
     {label:'Simian B.V.',fn:'renderOrganisatie()'},
@@ -355,7 +359,7 @@ function renderAfdelingen(kpId){
 
 // ---- VIEW: FUNCTIES ----
 function renderFuncties(afdId){
-  nav.afd=afdelingen.find(a=>a.id===afdId);
+  nav.afd=afdelingen.find(a=>a.id===afdId); showBackBtn(true);
   setLevel(2);
   setBc([
     {label:'Simian B.V.',fn:'renderOrganisatie()'},
@@ -384,7 +388,7 @@ function renderFuncties(afdId){
 function renderDetail(funcId){
   const func=functies.find(f=>String(f.id)===String(funcId));
   if(!func) return;
-  nav.func=func;
+  nav.func=func; showBackBtn(true);
   const afd=nav.afd||afdelingen.find(a=>a.id===func.afdeling_id)||{naam:'—',id:'',kostenplaats_id:''};
   const kp=nav.kp||kostenplaatsen.find(k=>k.id===afd.kostenplaats_id)||{naam:'—',id:''};
   setLevel(4);
