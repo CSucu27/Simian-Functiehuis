@@ -23,8 +23,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 /* Breadcrumb */
 .bc-wrap{background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:10px 16px;margin-bottom:18px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .bc-wrap .bc-label{font-size:10px;color:#bbb;text-transform:uppercase;letter-spacing:.6px;margin-right:2px}
-.bc-wrap a{font-size:12px;color:var(--navy2);cursor:pointer;font-weight:500;text-decoration:none}
-.bc-wrap a:hover{text-decoration:underline}
+.bc-wrap a,.bc-wrap .a{font-size:12px;color:var(--navy2);cursor:pointer;font-weight:500;text-decoration:none;background:none;border:none;padding:0;font-family:inherit}
+.bc-wrap a:hover,.bc-wrap .a:hover{text-decoration:underline}
 .bc-wrap .sep{color:#ddd;font-size:12px}
 .bc-wrap .cur{font-size:12px;color:#1a1a1a;font-weight:600}
 
@@ -296,7 +296,7 @@ function setBc(items){
   const bc=document.getElementById('bc-wrap');
   const links=items.map((it,i)=>{
     if(i===items.length-1) return`<span class="cur">${it.label}</span>`;
-    return`<a onclick="${it.fn}">${it.label}</a><span class="sep">›</span>`;
+    return`<button class="a" onclick="${it.fn}">${it.label}</button><span class="sep">›</span>`;
   }).join('');
   bc.innerHTML=`<span class="bc-label">Locatie</span>${links}`;
 }
