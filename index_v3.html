@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simian B.V. — Functiehuis</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f4f5f7;min-height:100vh}
+:root{--navy:#0B1F3A;--yellow:#F5C518;--navy2:#1a3558}
+
+.header{background:var(--navy);color:#fff;padding:13px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;gap:12px}
+.logo{font-size:15px;font-weight:600;white-space:nowrap;letter-spacing:.2px}
+.logo span{color:var(--yellow)}
+.nav-tabs{display:flex;gap:4px;flex-shrink:0}
+.tab-btn{background:transparent;border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.7);padding:6px 16px;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit;transition:.15s}
+.tab-btn.active{background:var(--yellow);color:var(--navy);border-color:var(--yellow);font-weight:700}
+.tab-btn:hover:not(.active){border-color:rgba(255,255,255,.5);color:#fff}
+
+.main{padding:20px 24px;max-width:1100px;margin:0 auto}
+.section{display:none}.section.active{display:block}
+
+/* Breadcrumb */
+.bc-wrap{background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:10px 16px;margin-bottom:18px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.bc-wrap .bc-label{font-size:10px;color:#bbb;text-transform:uppercase;letter-spacing:.6px;margin-right:2px}
+.bc-wrap a{font-size:12px;color:var(--navy2);cursor:pointer;font-weight:500;text-decoration:none}
+.bc-wrap a:hover{text-decoration:underline}
+.bc-wrap .sep{color:#ddd;font-size:12px}
+.bc-wrap .cur{font-size:12px;color:#1a1a1a;font-weight:600}
+
+/* Level indicator */
+.level-bar{display:flex;gap:0;margin-bottom:16px;border-radius:8px;overflow:hidden;border:1px solid #e5e7eb}
+.lv-item{flex:1;padding:9px 8px;text-align:center;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#ccc;background:#fff;border-right:1px solid #f0f0f0;transition:.2s}
+.lv-item:last-child{border-right:0}
+.lv-item.done{background:#f8f9fa;color:var(--navy2)}
+.lv-item.active{background:var(--navy);color:var(--yellow)}
+
+/* Card grid */
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px 18px;cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.card:hover{border-color:var(--navy);box-shadow:0 3px 12px rgba(11,31,58,.09)}
+.card-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:14px}
+.card-name{font-size:14px;font-weight:700;color:#1a1a1a;margin-bottom:5px}
+.card-sub{font-size:11px;color:#aaa;margin-bottom:8px}
+.card-badge{display:inline-block;background:#f5c51818;border:1px solid #e5b80055;color:#7a5200;font-size:10px;padding:2px 9px;border-radius:4px;font-weight:700}
+
+/* Section header */
+.section-header{margin-bottom:14px}
+.section-title{font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.8px}
+
+/* Functie cards */
+.func-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:10px}
+.func-card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:14px;cursor:pointer;transition:.15s}
+.func-card:hover{border-color:var(--navy)}
+.lv-badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:700;margin-bottom:8px}
+.lv1{background:#e1f5ee;color:#085041}
+.lv2{background:#fff3c4;color:#7a5200}
+.lv3{background:#fde8d8;color:#7c2d12}
+.func-name{font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:4px}
+.func-scale-info{font-size:11px;color:#aaa}
+
+/* Detail view */
+.detail-wrap{background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden}
+.detail-head{background:var(--navy);color:#fff;padding:20px 24px}
+.detail-head h2{font-size:17px;font-weight:700;margin-bottom:5px}
+.detail-head p{font-size:12px;color:rgba(255,255,255,.55)}
+.detail-nav{display:flex;border-bottom:1px solid #f0f0f0;overflow-x:auto;background:#fff}
+.dnav{padding:12px 18px;font-size:12px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;color:#aaa;white-space:nowrap;background:none;border-top:0;border-left:0;border-right:0;font-family:inherit}
+.dnav.active{border-bottom-color:var(--navy);color:var(--navy)}
+.dnav:hover:not(.active){color:#1a1a1a}
+.detail-body{padding:22px 24px}
+.pane{display:none}.pane.active{display:block}
+.field{margin-bottom:18px}
+.field label{display:block;font-size:10px;color:#bbb;text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px;font-weight:700}
+.field p{font-size:13px;color:#1a1a1a;line-height:1.7}
+.sal-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.sal-box{background:#f8f9fa;border-radius:8px;padding:14px;text-align:center}
+.sal-box.mid{background:#0B1F3A0d;border:1px solid #0B1F3A1a}
+.sal-box span{display:block;font-size:10px;color:#bbb;margin-bottom:5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.sal-box strong{font-size:17px;font-weight:700;color:#1a1a1a}
+.sal-box.mid strong{color:var(--navy)}
+.sh-visual{margin-top:14px}
+.sh-row{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.sh-lbl{font-size:10px;color:#bbb;width:68px;flex-shrink:0;font-weight:600}
+.sh-bars{display:flex;gap:3px;flex:1}
+.sh-bar{flex:1;height:26px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700}
+.sh-bar.on{background:var(--navy);color:var(--yellow)}
+.sh-bar.off{background:#f0f0f0;color:#ccc}
+.comp-item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #f5f5f5}
+.comp-item:last-child{border-bottom:0}
+.comp-dot{width:8px;height:8px;border-radius:50%;background:var(--yellow);border:2px solid var(--navy);margin-top:5px;flex-shrink:0}
+.comp-name{font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:3px}
+.comp-desc{font-size:12px;color:#888;line-height:1.55}
+.norm-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.norm-tbl th{text-align:left;padding:9px 12px;background:#f8f9fa;color:#aaa;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #e5e7eb}
+.norm-tbl td{padding:10px 12px;border-bottom:1px solid #f5f5f5;color:#1a1a1a}
+.norm-tbl tr:last-child td{border-bottom:0}
+.instr-step{background:#f8f9fa;border-radius:8px;padding:12px 16px;margin-bottom:8px;border-left:3px solid var(--navy)}
+.instr-step .sn{font-size:10px;color:#aaa;margin-bottom:3px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.instr-step .st{font-size:13px;color:#1a1a1a;line-height:1.55}
+
+/* Admin */
+.admin-box{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px;margin-bottom:16px}
+.admin-box-title{font-size:13px;font-weight:700;color:#1a1a1a;padding-bottom:12px;border-bottom:1px solid #f0f0f0;margin-bottom:16px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fg label{font-size:11px;color:#888;font-weight:600}
+.fg input,.fg textarea,.fg select{font-family:inherit;font-size:13px;padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;color:#1a1a1a;outline:none;transition:border-color .15s;width:100%}
+.fg input:focus,.fg textarea:focus,.fg select:focus{border-color:var(--navy)}
+.fg textarea{resize:vertical;min-height:75px}
+.btn-row{display:flex;gap:8px;margin-top:4px}
+.btn-p{background:var(--navy);color:#fff;border:0;padding:9px 20px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn-p:hover{background:var(--navy2)}
+.btn-s{background:#fff;color:#1a1a1a;border:1px solid #d1d5db;padding:9px 20px;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit}
+.btn-s:hover{background:#f8f9fa}
+.btn-d{background:#fff;color:#a32d2d;border:1px solid #a32d2d;padding:6px 12px;border-radius:6px;font-size:11px;cursor:pointer;font-family:inherit}
+.func-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #f5f5f5}
+.func-row:last-child{border-bottom:0}
+.func-row-name{font-size:13px;font-weight:700;color:#1a1a1a}
+.func-row-meta{font-size:11px;color:#aaa;margin-top:2px}
+.error-msg{background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:12px 16px;font-size:13px;color:#991b1b;margin-top:10px}
+.empty{font-size:13px;color:#aaa;padding:16px 0}
+.loading{padding:40px;text-align:center;color:#aaa;font-size:13px}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--navy);color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;display:none;z-index:999;border-left:3px solid var(--yellow);box-shadow:0 4px 16px rgba(0,0,0,.18)}
+
+/* Salarishuis */
+.sh-overview{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+.sh-card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:16px}
+.sh-card-title{font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:3px}
+.sh-card-range{font-size:12px;color:#aaa;margin-bottom:10px}
+.sh-func-tag{font-size:11px;background:#f0f4ff;color:#1a3558;border:1px solid #c7d2fe;padding:2px 8px;border-radius:4px;cursor:pointer;display:inline-block;margin:2px;font-weight:500}
+.sh-func-tag:hover{background:#e0e7ff}
+
+@media(max-width:600px){.form-grid{grid-template-columns:1fr}.nav-tabs .tab-btn{padding:6px 10px;font-size:11px}.level-bar{display:none}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo"><span>Simian B.V.</span> — Functiehuis</div>
+  <div class="nav-tabs">
+    <button class="tab-btn active" onclick="switchTab('plattegrond',this)">Plattegrond</button>
+    <button class="tab-btn" onclick="switchTab('salarishuis',this)">Salarishuis</button>
+    <button class="tab-btn" onclick="switchTab('admin',this)">Beheer</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- PLATTEGROND -->
+  <div id="tab-plattegrond" class="section active">
+    <div class="level-bar">
+      <div class="lv-item active" id="lv0">Organisatie</div>
+      <div class="lv-item" id="lv1">Kostenplaats</div>
+      <div class="lv-item" id="lv2">Afdeling</div>
+      <div class="lv-item" id="lv3">Functies</div>
+      <div class="lv-item" id="lv4">Detail</div>
+    </div>
+    <div class="bc-wrap" id="bc-wrap">
+      <span class="bc-label">Locatie</span>
+      <span class="cur">Simian B.V.</span>
+    </div>
+    <div id="plat-content"><div class="loading">Laden...</div></div>
+  </div>
+
+  <!-- SALARISHUIS -->
+  <div id="tab-salarishuis" class="section">
+    <div id="sh-body"><div class="loading">Laden...</div></div>
+  </div>
+
+  <!-- BEHEER -->
+  <div id="tab-admin" class="section">
+    <div class="admin-box">
+      <div class="admin-box-title">Afdeling toevoegen</div>
+      <div class="form-grid">
+        <div class="fg"><label>Naam afdeling</label><input id="a-naam" type="text" placeholder="Bijv. Snijden"></div>
+        <div class="fg"><label>Kostenplaats</label><select id="a-kp"></select></div>
+      </div>
+      <div class="fg" style="margin-bottom:12px;max-width:160px">
+        <label>Icoon (emoji)</label><input id="a-icon" type="text" placeholder="🏭">
+      </div>
+      <div class="btn-row">
+        <button class="btn-p" onclick="saveAfd()">Afdeling opslaan</button>
+        <button class="btn-s" onclick="clearAfd()">Wissen</button>
+      </div>
+      <div id="afd-error"></div>
+    </div>
+
+    <div class="admin-box">
+      <div class="admin-box-title">Functie toevoegen / bewerken</div>
+      <input type="hidden" id="f-id">
+      <div class="form-grid">
+        <div class="fg"><label>Functienaam</label><input id="f-naam" type="text" placeholder="Bijv. Operator Lamineren A"></div>
+        <div class="fg"><label>Afdeling</label><select id="f-afd"></select></div>
+      </div>
+      <div class="form-grid">
+        <div class="fg"><label>Niveau</label>
+          <select id="f-niveau">
+            <option value="1">Niveau 1 — Uitvoerend</option>
+            <option value="2">Niveau 2 — Allround</option>
+            <option value="3">Niveau 3 — Senior / Specialist</option>
+          </select>
+        </div>
+        <div class="fg"><label>Salarisschaal</label><select id="f-schaal"></select></div>
+      </div>
+      <div class="fg" style="margin-bottom:12px">
+        <label>Functieprofiel</label>
+        <textarea id="f-profiel" placeholder="Kerntaken en verantwoordelijkheden..."></textarea>
+      </div>
+      <div class="fg" style="margin-bottom:12px">
+        <label>Werkinstructies (één per regel, begin met stap-nummer)</label>
+        <textarea id="f-instr" placeholder="1. Controleer machinestatus&#10;2. Stel parameters in&#10;3. Registreer afwijkingen"></textarea>
+      </div>
+      <div class="fg" style="margin-bottom:14px">
+        <label>Normen / targets (gebruik | als scheidingsteken)</label>
+        <textarea id="f-normen" placeholder="Output: 200 m²/dag | Uitval: &lt;1% | OEE: &gt;85%"></textarea>
+      </div>
+      <div class="btn-row">
+        <button class="btn-p" onclick="saveFunc()">Opslaan naar Sheets</button>
+        <button class="btn-s" onclick="clearFunc()">Wissen</button>
+      </div>
+      <div id="func-error"></div>
+    </div>
+
+    <div class="admin-box">
+      <div class="admin-box-title">Bestaande functies</div>
+      <div id="admin-list"></div>
+    </div>
+  </div>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// CONFIGURATIE — vul jouw Apps Script Web App URL in
+// ============================================================
+const API_URL = 'JOUW_APPS_SCRIPT_URL_HIER';
+// ============================================================
+
+const COMPETENCIES = [
+  {name:'Vakkennis & kwaliteit',    desc:'Beheerst het vakgebied en levert consistent werk van goede kwaliteit.'},
+  {name:'Samenwerking',             desc:'Werkt effectief samen met collega\'s en draagt bij aan het teamresultaat.'},
+  {name:'Initiatief & proactiviteit',desc:'Signaleert knelpunten en neemt actie zonder te wachten op instructie.'},
+  {name:'Veiligheid & compliance',  desc:'Werkt altijd conform veiligheidsvoorschriften en interne procedures.'}
+];
+
+let kostenplaatsen=[], afdelingen=[], schalen=[], functies=[];
+let nav={kp:null, afd:null, func:null};
+
+// ---- API ----
+async function api(params, body=null){
+  try {
+    if(body){
+      const r=await fetch(API_URL,{method:'POST',body:JSON.stringify(body)});
+      return r.json();
+    }
+    const r=await fetch(API_URL+'?'+new URLSearchParams(params));
+    return r.json();
+  } catch(e){ return {error:e.message}; }
+}
+
+async function loadAll(){
+  const [kp,afd,s,fn]=await Promise.all([
+    api({action:'getKostenplaatsen'}),
+    api({action:'getAfdelingen'}),
+    api({action:'getSchalen'}),
+    api({action:'getFuncties'})
+  ]);
+  kostenplaatsen=Array.isArray(kp)?kp:[];
+  afdelingen=Array.isArray(afd)?afd:[];
+  schalen=Array.isArray(s)?s:[];
+  functies=Array.isArray(fn)?fn:[];
+}
+
+async function init(){
+  await loadAll();
+  renderOrganisatie();
+  fillAdminSelects();
+  renderAdminList();
+}
+
+// ---- LEVEL BAR ----
+function setLevel(n){
+  ['lv0','lv1','lv2','lv3','lv4'].forEach((id,i)=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    el.classList.remove('active','done');
+    if(i===n) el.classList.add('active');
+    else if(i<n) el.classList.add('done');
+  });
+}
+
+// ---- BREADCRUMB ----
+function setBc(items){
+  const bc=document.getElementById('bc-wrap');
+  const links=items.map((it,i)=>{
+    if(i===items.length-1) return`<span class="cur">${it.label}</span>`;
+    return`<a onclick="${it.fn}">${it.label}</a><span class="sep">›</span>`;
+  }).join('');
+  bc.innerHTML=`<span class="bc-label">Locatie</span>${links}`;
+}
+
+// ---- VIEW: ORGANISATIE (kostenplaatsen) ----
+function renderOrganisatie(){
+  nav={kp:null,afd:null,func:null};
+  setLevel(0);
+  setBc([{label:'Simian B.V.'}]);
+  const c=document.getElementById('plat-content');
+  if(!kostenplaatsen.length){
+    c.innerHTML='<p class="empty">Geen kostenplaatsen gevonden. Controleer je Sheets-koppeling of voer setupSheets() uit.</p>';
+    return;
+  }
+  const cards=kostenplaatsen.map(kp=>{
+    const afdIds=afdelingen.filter(a=>a.kostenplaats_id===kp.id).map(a=>a.id);
+    const fCount=functies.filter(f=>afdIds.includes(f.afdeling_id)).length;
+    const aCount=afdIds.length;
+    return`<div class="card" onclick="renderAfdelingen('${kp.id}')">
+      <div class="card-icon" style="background:#0B1F3A12">${kp.icon||'📂'}</div>
+      <div class="card-name">${kp.naam}</div>
+      <div class="card-sub">${aCount} afdeling${aCount!==1?'en':''}</div>
+      <div class="card-badge">${fCount} functie${fCount!==1?'s':''}</div>
+    </div>`;
+  }).join('');
+  c.innerHTML=`<div class="section-header"><div class="section-title">Kostenplaatsen</div></div>
+    <div class="card-grid">${cards}</div>`;
+}
+
+// ---- VIEW: AFDELINGEN ----
+function renderAfdelingen(kpId){
+  nav.kp=kostenplaatsen.find(k=>k.id===kpId);
+  setLevel(1);
+  setBc([
+    {label:'Simian B.V.',fn:'renderOrganisatie()'},
+    {label:nav.kp.naam}
+  ]);
+  const afds=afdelingen.filter(a=>a.kostenplaats_id===kpId);
+  const c=document.getElementById('plat-content');
+  if(!afds.length){
+    c.innerHTML='<p class="empty">Nog geen afdelingen onder deze kostenplaats. Voeg ze toe via Beheer.</p>';
+    return;
+  }
+  const cards=afds.map(a=>{
+    const fCount=functies.filter(f=>f.afdeling_id===a.id).length;
+    return`<div class="card" onclick="renderFuncties('${a.id}')">
+      <div class="card-icon" style="background:#fff3c4">${a.icon||'🏭'}</div>
+      <div class="card-name">${a.naam}</div>
+      <div class="card-sub">Afdeling · ${nav.kp.naam}</div>
+      <div class="card-badge">${fCount} functie${fCount!==1?'s':''}</div>
+    </div>`;
+  }).join('');
+  c.innerHTML=`<div class="section-header"><div class="section-title">Afdelingen — ${nav.kp.naam}</div></div>
+    <div class="card-grid">${cards}</div>`;
+}
+
+// ---- VIEW: FUNCTIES ----
+function renderFuncties(afdId){
+  nav.afd=afdelingen.find(a=>a.id===afdId);
+  setLevel(2);
+  setBc([
+    {label:'Simian B.V.',fn:'renderOrganisatie()'},
+    {label:nav.kp.naam,fn:`renderAfdelingen('${nav.kp.id}')`},
+    {label:nav.afd.naam}
+  ]);
+  const fns=functies.filter(f=>f.afdeling_id===afdId);
+  const c=document.getElementById('plat-content');
+  if(!fns.length){
+    c.innerHTML='<p class="empty">Nog geen functies voor deze afdeling. Voeg ze toe via Beheer.</p>';
+    return;
+  }
+  const cards=fns.map(f=>{
+    const s=schalen.find(sc=>sc.id===f.schaal_id)||{label:'—',min:0,max:0};
+    return`<div class="func-card" onclick="renderDetail('${f.id}')">
+      <span class="lv-badge lv${f.niveau}">Niveau ${f.niveau}</span>
+      <div class="func-name">${f.naam}</div>
+      <div class="func-scale-info">${s.label} · €${Number(s.min).toLocaleString('nl-NL')} – €${Number(s.max).toLocaleString('nl-NL')}</div>
+    </div>`;
+  }).join('');
+  c.innerHTML=`<div class="section-header"><div class="section-title">Functies — ${nav.afd.naam}</div></div>
+    <div class="func-grid">${cards}</div>`;
+}
+
+// ---- VIEW: DETAIL ----
+function renderDetail(funcId){
+  const func=functies.find(f=>String(f.id)===String(funcId));
+  if(!func) return;
+  nav.func=func;
+  const afd=nav.afd||afdelingen.find(a=>a.id===func.afdeling_id)||{naam:'—',id:'',kostenplaats_id:''};
+  const kp=nav.kp||kostenplaatsen.find(k=>k.id===afd.kostenplaats_id)||{naam:'—',id:''};
+  setLevel(4);
+  setBc([
+    {label:'Simian B.V.',fn:'renderOrganisatie()'},
+    {label:kp.naam,fn:`renderAfdelingen('${kp.id}')`},
+    {label:afd.naam,fn:`renderFuncties('${afd.id}')`},
+    {label:func.naam}
+  ]);
+  const s=schalen.find(sc=>sc.id===func.schaal_id)||{label:'—',min:0,mid:0,max:0};
+
+  const instrHtml=(func.instructies||'').split('\n').filter(Boolean).map((l,i)=>`
+    <div class="instr-step">
+      <div class="sn">Stap ${i+1}</div>
+      <div class="st">${l.replace(/^\d+\.\s*/,'')}</div>
+    </div>`).join('') || '<p class="empty">Geen werkinstructies ingevoerd.</p>';
+
+  const normRows=(func.normen||'').split('|').filter(Boolean).map(n=>{
+    const p=n.split(':');
+    return`<tr><td>${(p[0]||'').trim()}</td><td><strong>${(p.slice(1).join(':'))||'—'}</strong></td></tr>`;
+  }).join('') || '<tr><td colspan="2" style="color:#aaa;padding:10px 12px">Geen normen ingevoerd.</td></tr>';
+
+  const shRows=schalen.map(sc=>`
+    <div class="sh-row">
+      <div class="sh-lbl">${sc.label}</div>
+      <div class="sh-bars">
+        <div class="sh-bar ${sc.id===func.schaal_id?'on':'off'}">€${Number(sc.min).toLocaleString('nl-NL')}</div>
+        <div class="sh-bar ${sc.id===func.schaal_id?'on':'off'}">€${Number(sc.mid).toLocaleString('nl-NL')}</div>
+        <div class="sh-bar ${sc.id===func.schaal_id?'on':'off'}">€${Number(sc.max).toLocaleString('nl-NL')}</div>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('plat-content').innerHTML=`
+  <div class="detail-wrap">
+    <div class="detail-head">
+      <h2>${func.naam}</h2>
+      <p>${kp.naam} › ${afd.naam} · Niveau ${func.niveau} · ${s.label}</p>
+    </div>
+    <div class="detail-nav">
+      <button class="dnav active" onclick="switchPane('profiel',this)">Profiel</button>
+      <button class="dnav" onclick="switchPane('salaris',this)">Salaris</button>
+      <button class="dnav" onclick="switchPane('instructies',this)">Instructies</button>
+      <button class="dnav" onclick="switchPane('normen',this)">Normen</button>
+      <button class="dnav" onclick="switchPane('competenties',this)">Competenties</button>
+    </div>
+    <div class="detail-body">
+      <div id="pane-profiel" class="pane active">
+        <div class="field"><label>Functieprofiel</label><p>${func.profiel||'Nog niet ingevoerd.'}</p></div>
+        <div class="field"><label>Kostenplaats</label><p>${kp.naam}</p></div>
+        <div class="field"><label>Afdeling</label><p>${afd.naam}</p></div>
+        <div class="field"><label>Niveau</label><p>Niveau ${func.niveau}${func.niveau==1?' — Uitvoerend':func.niveau==2?' — Allround':' — Senior / Specialist'}</p></div>
+      </div>
+      <div id="pane-salaris" class="pane">
+        <div class="sal-grid">
+          <div class="sal-box"><span>Minimum</span><strong>€${Number(s.min).toLocaleString('nl-NL')}</strong></div>
+          <div class="sal-box mid"><span>Middelpunt</span><strong>€${Number(s.mid).toLocaleString('nl-NL')}</strong></div>
+          <div class="sal-box"><span>Maximum</span><strong>€${Number(s.max).toLocaleString('nl-NL')}</strong></div>
+        </div>
+        <div class="field"><label>Salarisschaal</label><p>${s.label}</p></div>
+        <div class="sh-visual">${shRows}</div>
+      </div>
+      <div id="pane-instructies" class="pane">${instrHtml}</div>
+      <div id="pane-normen" class="pane">
+        <table class="norm-tbl">
+          <thead><tr><th>Norm</th><th>Target</th></tr></thead>
+          <tbody>${normRows}</tbody>
+        </table>
+      </div>
+      <div id="pane-competenties" class="pane">
+        ${COMPETENCIES.map(c=>`
+        <div class="comp-item">
+          <div class="comp-dot"></div>
+          <div><div class="comp-name">${c.name}</div><div class="comp-desc">${c.desc}</div></div>
+        </div>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+function switchPane(name,btn){
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.dnav').forEach(b=>b.classList.remove('active'));
+  document.getElementById('pane-'+name).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ---- SALARISHUIS ----
+function renderSalarishuis(){
+  const c=document.getElementById('sh-body');
+  c.innerHTML='<div class="sh-overview">'+schalen.map(s=>{
+    const fns=functies.filter(f=>f.schaal_id===s.id);
+    return`<div class="sh-card">
+      <div class="sh-card-title">${s.label}</div>
+      <div class="sh-card-range">€${Number(s.min).toLocaleString('nl-NL')} – €${Number(s.max).toLocaleString('nl-NL')} &nbsp;·&nbsp; middelpunt €${Number(s.mid).toLocaleString('nl-NL')}</div>
+      <div class="sal-grid">
+        <div class="sal-box"><span>Min</span><strong>€${Number(s.min).toLocaleString('nl-NL')}</strong></div>
+        <div class="sal-box mid"><span>Mid</span><strong>€${Number(s.mid).toLocaleString('nl-NL')}</strong></div>
+        <div class="sal-box"><span>Max</span><strong>€${Number(s.max).toLocaleString('nl-NL')}</strong></div>
+      </div>
+      ${fns.length
+        ?'<div style="margin-top:8px">'+fns.map(f=>`<span class="sh-func-tag" onclick="goToFunc('${f.id}')">${f.naam}</span>`).join('')+'</div>'
+        :'<p style="font-size:11px;color:#ccc;margin-top:8px">Geen functies gekoppeld aan deze schaal.</p>'}
+    </div>`;
+  }).join('')+'</div>';
+}
+
+function goToFunc(id){
+  const f=functies.find(fn=>String(fn.id)===String(id));
+  if(!f) return;
+  nav.afd=afdelingen.find(a=>a.id===f.afdeling_id)||null;
+  nav.kp=nav.afd?kostenplaatsen.find(k=>k.id===nav.afd.kostenplaats_id)||null:null;
+  switchTab('plattegrond',document.querySelectorAll('.tab-btn')[0]);
+  setTimeout(()=>renderDetail(f.id),50);
+}
+
+// ---- ADMIN ----
+function fillAdminSelects(){
+  const akp=document.getElementById('a-kp');
+  if(akp) akp.innerHTML=kostenplaatsen.map(k=>`<option value="${k.id}">${k.naam}</option>`).join('');
+  const fafd=document.getElementById('f-afd');
+  if(fafd) fafd.innerHTML=afdelingen.map(a=>{
+    const kp=kostenplaatsen.find(k=>k.id===a.kostenplaats_id);
+    return`<option value="${a.id}">${a.naam}${kp?' ('+kp.naam+')':''}`;
+  }).join('');
+  const fsc=document.getElementById('f-schaal');
+  if(fsc) fsc.innerHTML=schalen.map(s=>`<option value="${s.id}">${s.label} · €${Number(s.min).toLocaleString('nl-NL')}–€${Number(s.max).toLocaleString('nl-NL')}</option>`).join('');
+}
+
+function renderAdminList(){
+  const el=document.getElementById('admin-list');
+  if(!functies.length){el.innerHTML='<p class="empty">Nog geen functies toegevoegd.</p>';return;}
+  el.innerHTML=functies.map(f=>{
+    const a=afdelingen.find(ad=>ad.id===f.afdeling_id)||{naam:'—'};
+    const kp=kostenplaatsen.find(k=>k.id===a.kostenplaats_id)||{naam:'—'};
+    const s=schalen.find(sc=>sc.id===f.schaal_id)||{label:'—'};
+    return`<div class="func-row">
+      <div>
+        <div class="func-row-name">${f.naam}</div>
+        <div class="func-row-meta">${kp.naam} › ${a.naam} · ${s.label} · Niveau ${f.niveau}</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn-s" style="font-size:11px;padding:5px 10px" onclick="editFunc('${f.id}')">Bewerken</button>
+        <button class="btn-d" onclick="deleteFunc('${f.id}')">Verwijder</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function saveAfd(){
+  const naam=document.getElementById('a-naam').value.trim();
+  const errEl=document.getElementById('afd-error');
+  errEl.innerHTML='';
+  if(!naam){errEl.innerHTML='<div class="error-msg">Geef een afdelingsnaam op.</div>';return;}
+  if(API_URL==='JOUW_APPS_SCRIPT_URL_HIER'){errEl.innerHTML='<div class="error-msg">Vul eerst de API_URL in in het HTML-bestand.</div>';return;}
+  const payload={id:Date.now(),naam,kostenplaats_id:document.getElementById('a-kp').value,icon:document.getElementById('a-icon').value||'🏭'};
+  const res=await api({},{action:'saveAfdeling',payload});
+  if(res.error){errEl.innerHTML=`<div class="error-msg">${res.error}</div>`;return;}
+  await loadAll();clearAfd();fillAdminSelects();renderAdminList();toast('Afdeling opgeslagen');
+}
+
+async function saveFunc(){
+  const naam=document.getElementById('f-naam').value.trim();
+  const errEl=document.getElementById('func-error');
+  errEl.innerHTML='';
+  if(!naam){errEl.innerHTML='<div class="error-msg">Geef een functienaam op.</div>';return;}
+  if(API_URL==='JOUW_APPS_SCRIPT_URL_HIER'){errEl.innerHTML='<div class="error-msg">Vul eerst de API_URL in.</div>';return;}
+  const payload={
+    id:document.getElementById('f-id').value||Date.now(),
+    naam,
+    afdeling_id:document.getElementById('f-afd').value,
+    niveau:document.getElementById('f-niveau').value,
+    schaal_id:document.getElementById('f-schaal').value,
+    profiel:document.getElementById('f-profiel').value,
+    instructies:document.getElementById('f-instr').value,
+    normen:document.getElementById('f-normen').value
+  };
+  const res=await api({},{action:'saveFunctie',payload});
+  if(res.error){errEl.innerHTML=`<div class="error-msg">${res.error}</div>`;return;}
+  await loadAll();clearFunc();fillAdminSelects();renderAdminList();toast('Functie opgeslagen in Sheets');
+}
+
+async function deleteFunc(id){
+  if(!confirm('Functie verwijderen? Dit kan niet ongedaan worden gemaakt.')) return;
+  const res=await api({},{action:'deleteFunctie',id});
+  if(res.error){toast('Fout: '+res.error);return;}
+  await loadAll();renderAdminList();toast('Functie verwijderd');
+}
+
+function editFunc(id){
+  const f=functies.find(fn=>String(fn.id)===String(id));
+  if(!f) return;
+  document.getElementById('f-id').value=f.id;
+  document.getElementById('f-naam').value=f.naam;
+  document.getElementById('f-afd').value=f.afdeling_id;
+  document.getElementById('f-niveau').value=f.niveau;
+  document.getElementById('f-schaal').value=f.schaal_id;
+  document.getElementById('f-profiel').value=f.profiel||'';
+  document.getElementById('f-instr').value=f.instructies||'';
+  document.getElementById('f-normen').value=f.normen||'';
+  switchTab('admin',document.querySelectorAll('.tab-btn')[2]);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function clearAfd(){
+  ['a-naam','a-icon'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('afd-error').innerHTML='';
+}
+function clearFunc(){
+  ['f-id','f-naam','f-profiel','f-instr','f-normen'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('func-error').innerHTML='';
+}
+
+function switchTab(tab,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  btn.classList.add('active');
+  if(tab==='salarishuis') renderSalarishuis();
+  if(tab==='admin'){fillAdminSelects();renderAdminList();}
+  if(tab==='plattegrond') renderOrganisatie();
+}
+
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.style.display='block';
+  setTimeout(()=>t.style.display='none',3000);
+}
+
+init();
+</script>
+</body>
+</html>
