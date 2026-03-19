@@ -237,6 +237,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <textarea id="f-profiel" placeholder="Kerntaken en verantwoordelijkheden..."></textarea>
       </div>
       <div class="fg" style="margin-bottom:12px">
+        <label>Opleidingsniveau</label>
+        <input id="f-opleiding" type="text" placeholder="Bijv. MBO niveau 2–3, technische richting">
+      </div>
+      <div class="fg" style="margin-bottom:12px">
         <label>Werkinstructies (één per regel)</label>
         <textarea id="f-instr" placeholder="1. Controleer machinestatus&#10;2. Stel parameters in&#10;3. Registreer afwijkingen"></textarea>
       </div>
@@ -397,7 +401,7 @@ function renderFuncties(plId){
       return`<div class="func-card" onclick="renderDetail('${f.id}')">
         <span class="lv-badge lv${f.niveau}">Niveau ${f.niveau}</span>
         <div class="func-name">${f.naam}</div>
-        <div class="func-scale-info">${s.label} · €${Number(s.aanloop).toLocaleString('nl-NL')} – €${Number(s.einde_schaal).toLocaleString('nl-NL')}</div>
+        <div class="func-scale-info">${s.label} · €${Number(s.stap1||0).toLocaleString('nl-NL')} – €${Number(s.stap5||0).toLocaleString('nl-NL')}</div>
       </div>`;
     }).join('')+'</div>';
 }
@@ -409,7 +413,7 @@ function renderDetail(funcId){
   const s=schalen.find(sc=>sc.id===func.schaal_id)||{label:'—',aanloop:0,begin_schaal:0,einde_schaal:0};
   const instrHtml=(func.instructies||'').split('\n').filter(Boolean).map((l,i)=>`<div class="instr-step"><div class="sn">Stap ${i+1}</div><div class="st">${l.replace(/^\d+\.\s*/,'')}</div></div>`).join('')||'<p class="empty">Geen werkinstructies ingevoerd.</p>';
   const normRows=(func.normen||'').split('|').filter(Boolean).map(n=>{const p=n.split(':');return`<tr><td>${(p[0]||'').trim()}</td><td><strong>${(p.slice(1).join(':'))||'—'}</strong></td></tr>`;}).join('')||'<tr><td colspan="2" style="color:#aaa;padding:10px 12px">Geen normen ingevoerd.</td></tr>';
-  const shRows=schalen.map(sc=>`<div class="sh-row"><div class="sh-lbl">${sc.label}</div><div class="sh-bars"><div class="sh-bar ${sc.id===func.schaal_id?'on':'off'}">€${Number(sc.aanloop).toLocaleString('nl-NL')}</div><div class="sh-bar ${sc.id===func.schaal_id?'on':'off'}">€${Number(sc.begin_schaal).toLocaleString('nl-NL')}</div><div class="sh-bar ${sc.id===func.schaal_id?'on':'off'}">€${Number(sc.einde_schaal).toLocaleString('nl-NL')}</div></div></div>`).join('');
+  const shRows=schalen.map(sc=>{const on=sc.id===func.schaal_id;return`<div class="sh-row"><div class="sh-lbl">${sc.label}</div><div class="sh-bars"><div class="sh-bar ${on?'on':'off'}" style="font-size:8px">€${Number(sc.stap1).toLocaleString('nl-NL')}</div><div class="sh-bar ${on?'on':'off'}" style="font-size:8px">€${Number(sc.stap2).toLocaleString('nl-NL')}</div><div class="sh-bar ${on?'on':'off'}" style="font-size:8px">€${Number(sc.stap3).toLocaleString('nl-NL')}</div><div class="sh-bar ${on?'on':'off'}" style="font-size:8px">€${Number(sc.stap4).toLocaleString('nl-NL')}</div><div class="sh-bar ${on?'on':'off'}" style="font-size:8px">€${Number(sc.stap5).toLocaleString('nl-NL')}</div></div></div>`}).join('');
   document.getElementById('plat-content').innerHTML=`
   <div class="detail-wrap">
     <div class="detail-head"><h2>${func.naam}</h2><p>${nav.afd.naam} › ${nav.kp.naam} › ${nav.pl.naam} · Niveau ${func.niveau} · ${s.label}</p></div>
@@ -429,12 +433,18 @@ function renderDetail(funcId){
         <div class="field"><label>Niveau</label><p>Niveau ${func.niveau}${func.niveau==1?' — Uitvoerend':func.niveau==2?' — Allround':' — Senior / Specialist'}</p></div>
       </div>
       <div id="pane-salaris" class="pane">
-        <div class="sal-grid">
-          <div class="sal-box"><span>Aanloop</span><strong>€${Number(s.aanloop).toLocaleString('nl-NL')}</strong></div>
-          <div class="sal-box mid"><span>Begin schaal</span><strong>€${Number(s.begin_schaal).toLocaleString('nl-NL')}</strong></div>
-          <div class="sal-box"><span>Einde schaal</span><strong>€${Number(s.einde_schaal).toLocaleString('nl-NL')}</strong></div>
+        <div style="background:#fff3c4;border:1px solid #e5b800;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#7a5200">
+          <strong>* Aanloopschaal:</strong> €${Number(s.aanloop).toLocaleString('nl-NL')} — Alleen van toepassing indien de medewerker niet voldoet aan de gestelde eisen voor ervaring en/of opleidingsniveau.
+        </div>
+        <div class="sal-grid" style="grid-template-columns:repeat(5,1fr)">
+          <div class="sal-box mid"><span>Stap 1 — Minimum</span><strong>€${Number(s.stap1).toLocaleString('nl-NL')}</strong></div>
+          <div class="sal-box"><span>Stap 2</span><strong>€${Number(s.stap2).toLocaleString('nl-NL')}</strong></div>
+          <div class="sal-box"><span>Stap 3 — Midpoint</span><strong>€${Number(s.stap3).toLocaleString('nl-NL')}</strong></div>
+          <div class="sal-box"><span>Stap 4</span><strong>€${Number(s.stap4).toLocaleString('nl-NL')}</strong></div>
+          <div class="sal-box" style="background:#0B1F3A;border-color:#0B1F3A"><span style="color:rgba(255,255,255,.6)">Stap 5 — Maximum</span><strong style="color:#F5C518">€${Number(s.stap5).toLocaleString('nl-NL')}</strong></div>
         </div>
         <div class="field"><label>Salarisschaal</label><p>${s.label}</p></div>
+        <div class="field"><label>Opleidingsniveau</label><p>${func.opleiding||'—'}</p></div>
         <div class="sh-visual">${shRows}</div>
       </div>
       <div id="pane-instructies" class="pane">${instrHtml}</div>
@@ -505,7 +515,7 @@ function fillAdminSelects(){
   const fpl=document.getElementById('f-pl');
   if(fpl)fpl.innerHTML=productielijnen.map(p=>{const k=kostenplaatsen.find(k=>k.id===p.kostenplaats_id);return`<option value="${p.id}">${p.naam}${k?' ('+k.naam+')':''}`;}).join('');
   const fsc=document.getElementById('f-schaal');
-  if(fsc)fsc.innerHTML=schalen.map(s=>`<option value="${s.id}">${s.label} · €${Number(s.aanloop).toLocaleString('nl-NL')}–€${Number(s.einde_schaal).toLocaleString('nl-NL')}</option>`).join('');
+  if(fsc)fsc.innerHTML=schalen.map(s=>`<option value="${s.id}">${s.label} · €${Number(s.stap1||0).toLocaleString('nl-NL')}–€${Number(s.stap5||0).toLocaleString('nl-NL')}</option>`).join('');
 }
 
 function renderAdminList(){
@@ -534,7 +544,7 @@ async function saveFunc(){
   const naam=document.getElementById('f-naam').value.trim();
   const errEl=document.getElementById('func-error');errEl.innerHTML='';
   if(!naam){errEl.innerHTML='<div class="error-msg">Geef een functienaam op.</div>';return;}
-  const payload={id:document.getElementById('f-id').value||Date.now(),naam,productielijn_id:document.getElementById('f-pl').value,niveau:document.getElementById('f-niveau').value,schaal_id:document.getElementById('f-schaal').value,profiel:document.getElementById('f-profiel').value,instructies:document.getElementById('f-instr').value,normen:document.getElementById('f-normen').value};
+  const payload={id:document.getElementById('f-id').value||Date.now(),naam,productielijn_id:document.getElementById('f-pl').value,niveau:document.getElementById('f-niveau').value,schaal_id:document.getElementById('f-schaal').value,profiel:document.getElementById('f-profiel').value,opleiding:document.getElementById('f-opleiding').value,instructies:document.getElementById('f-instr').value,normen:document.getElementById('f-normen').value};
   const res=await api({},{action:'saveFunctie',payload});
   if(res.error){errEl.innerHTML=`<div class="error-msg">${res.error}</div>`;return;}
   await loadAll();clearFunc();fillAdminSelects();renderAdminList();toast('Functie opgeslagen');
@@ -552,13 +562,14 @@ function editFunc(id){
   document.getElementById('f-id').value=f.id;document.getElementById('f-naam').value=f.naam;
   document.getElementById('f-pl').value=f.productielijn_id;document.getElementById('f-niveau').value=f.niveau;
   document.getElementById('f-schaal').value=f.schaal_id;document.getElementById('f-profiel').value=f.profiel||'';
+  document.getElementById('f-opleiding').value=f.opleiding||'';
   document.getElementById('f-instr').value=f.instructies||'';document.getElementById('f-normen').value=f.normen||'';
   switchTab('admin',document.querySelectorAll('.tab-btn')[2]);
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
 function clearPL(){['pl-naam','pl-icon'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('pl-error').innerHTML='';}
-function clearFunc(){['f-id','f-naam','f-profiel','f-instr','f-normen'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('func-error').innerHTML='';}
+function clearFunc(){['f-id','f-naam','f-profiel','f-opleiding','f-instr','f-normen'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('func-error').innerHTML='';}
 
 function switchTab(tab,btn){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
