@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Simian B.V. — Functiehuis</title>
+<title>Simian B.V. — Salarishuis</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f4f5f7;min-height:100vh}
@@ -153,7 +153,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <!-- LOGIN -->
 <div class="login-overlay" id="login-overlay">
   <div class="login-box">
-    <div class="login-logo"><span>Simian B.V.</span> — Functiehuis</div>
+    <div class="login-logo"><span>Simian B.V.</span> — Salarishuis</div>
     <div class="login-sub">Voer het wachtwoord in om toegang te krijgen</div>
     <div class="login-fg">
       <label>Wachtwoord</label>
@@ -165,7 +165,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </div>
 
 <div class="header">
-  <div class="logo" style="justify-self:start"><span>Simian B.V.</span> — Functiehuis</div>
+  <div class="logo" style="justify-self:start"><span>Simian B.V.</span> — Salarishuis</div>
   <div style="display:flex;align-items:center;gap:8px;margin:0 auto">
     <button class="tab-btn active" onclick="switchTab('plattegrond',this)">Salarishuis</button>
     <button class="tab-btn" onclick="switchTab('salarishuis',this)">Salaris &amp; Schalen</button>
@@ -175,7 +175,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
 <div class="main">
 
-  <!-- PLATTEGROND -->
+  <!-- SALARISHUIS (plattegrond) -->
   <div id="tab-plattegrond" class="section active">
     <div class="level-bar">
       <button class="lv-item active" id="lv0" onclick="navToLevel(0)">Organisatie</button>
@@ -215,7 +215,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       </div>
       <div id="pl-error"></div>
     </div>
-
     <div class="admin-box">
       <div class="admin-box-title">Functie toevoegen / bewerken</div>
       <input type="hidden" id="f-id">
@@ -251,7 +250,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       </div>
       <div id="func-error"></div>
     </div>
-
     <div class="admin-box">
       <div class="admin-box-title">Bestaande functies</div>
       <div id="admin-list"></div>
@@ -262,14 +260,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="toast" id="toast"></div>
 
 <script>
-// ============================================================
-// CONFIGURATIE
-// ============================================================
 const API_URL = 'https://script.google.com/macros/s/AKfycbxNL1_76NR2RCsa75WWx_aUpKOUAXlWkE2QYxfw5xVqz_BdzAQ-i96V39IyLK-WCko5/exec';
-// ============================================================
-
-// Hiërarchie: Simian B.V. > Afdeling (Operations/Kantoor) > Kostenplaats (SF/LF) > Productielijn (Lamineren/Platen) > Functie
-// Sheets: Afdelingen (Operations/Kantoor), Kostenplaatsen (SF/LF), Productielijnen (Lamineren/Platen), Functies, Schalen
 
 const COMPETENCIES=[
   {name:'Vakkennis & kwaliteit',desc:'Beheerst het vakgebied en levert consistent werk van goede kwaliteit.'},
@@ -284,7 +275,6 @@ const CAO_GROEP={A:1,B:2,C:3,D:4,E:4,F:5,G:6,H:7,I:8,J:9,K:10};
 let afdelingen=[], kostenplaatsen=[], productielijnen=[], schalen=[], functies=[];
 let nav={afd:null, kp:null, pl:null, func:null};
 
-// ---- API ----
 async function api(params,body=null){
   try{
     if(body){const r=await fetch(API_URL,{method:'POST',body:JSON.stringify(body)});return r.json();}
@@ -294,68 +284,49 @@ async function api(params,body=null){
 
 async function loadAll(){
   const [a,k,p,s,f]=await Promise.all([
-    api({action:'getAfdelingen'}),
-    api({action:'getKostenplaatsen'}),
-    api({action:'getProductielijnen'}),
-    api({action:'getSchalen'}),
-    api({action:'getFuncties'})
+    api({action:'getAfdelingen'}),api({action:'getKostenplaatsen'}),
+    api({action:'getProductielijnen'}),api({action:'getSchalen'}),api({action:'getFuncties'})
   ]);
-  afdelingen=Array.isArray(a)?a:[];
-  kostenplaatsen=Array.isArray(k)?k:[];
-  productielijnen=Array.isArray(p)?p:[];
-  schalen=Array.isArray(s)?s:[];
-  functies=Array.isArray(f)?f:[];
+  afdelingen=Array.isArray(a)?a:[];kostenplaatsen=Array.isArray(k)?k:[];
+  productielijnen=Array.isArray(p)?p:[];schalen=Array.isArray(s)?s:[];functies=Array.isArray(f)?f:[];
 }
 
-async function init(){
-  await loadAll();
-  renderOrganisatie();
-  fillAdminSelects();
-  renderAdminList();
-}
+async function init(){await loadAll();renderOrganisatie();fillAdminSelects();renderAdminList();}
 
-// ---- LEVEL BAR ----
 function setLevel(n){
   for(let i=0;i<=5;i++){
-    const el=document.getElementById('lv'+i);
-    if(!el)continue;
+    const el=document.getElementById('lv'+i);if(!el)continue;
     el.classList.remove('active','done','inactive');
-    if(i===n) el.classList.add('active');
-    else if(i<n) el.classList.add('done');
-    else el.classList.add('inactive');
+    if(i===n)el.classList.add('active');else if(i<n)el.classList.add('done');else el.classList.add('inactive');
   }
   document.getElementById('back-btn').style.display=n>0?'inline-block':'none';
 }
 
-// ---- BREADCRUMB ----
 function setBc(items){
   const bc=document.getElementById('bc-wrap');
   bc.innerHTML='<span class="bc-label">Locatie</span>'+items.map((it,i)=>{
-    if(i===items.length-1) return`<span class="bc-cur">${it.label}</span>`;
+    if(i===items.length-1)return`<span class="bc-cur">${it.label}</span>`;
     return`<button class="bc-btn" onclick="${it.fn}">${it.label}</button><span class="bc-sep">›</span>`;
   }).join('');
 }
 
-// ---- NAVIGATION ----
 function navBack(){
-  if(nav.func)      renderFuncties(nav.pl.id);
-  else if(nav.pl)   renderProductielijnen(nav.kp.id);
-  else if(nav.kp)   renderKostenplaatsen(nav.afd.id);
-  else if(nav.afd)  renderOrganisatie();
+  if(nav.func)renderFuncties(nav.pl.id);
+  else if(nav.pl)renderProductielijnen(nav.kp.id);
+  else if(nav.kp)renderKostenplaatsen(nav.afd.id);
+  else if(nav.afd)renderOrganisatie();
 }
 
 function navToLevel(n){
-  if(n===0) renderOrganisatie();
-  else if(n===1&&nav.afd) renderKostenplaatsen(nav.afd.id);
-  else if(n===2&&nav.kp)  renderProductielijnen(nav.kp.id);
-  else if(n===3&&nav.pl)  renderFuncties(nav.pl.id);
+  if(n===0)renderOrganisatie();
+  else if(n===1&&nav.afd)renderKostenplaatsen(nav.afd.id);
+  else if(n===2&&nav.kp)renderProductielijnen(nav.kp.id);
+  else if(n===3&&nav.pl)renderFuncties(nav.pl.id);
   else if(n===4&&nav.func)renderDetail(nav.func.id);
 }
 
-// ---- VIEWS ----
 function renderOrganisatie(){
-  nav={afd:null,kp:null,pl:null,func:null};
-  setLevel(0);
+  nav={afd:null,kp:null,pl:null,func:null};setLevel(0);
   setBc([{label:'Simian B.V.'}]);
   const c=document.getElementById('plat-content');
   if(!afdelingen.length){c.innerHTML='<p class="empty">Geen afdelingen gevonden. Controleer je Sheets-koppeling.</p>';return;}
@@ -364,48 +335,43 @@ function renderOrganisatie(){
       const kpIds=kostenplaatsen.filter(k=>k.afdeling_id===a.id).map(k=>k.id);
       const plIds=productielijnen.filter(p=>kpIds.includes(p.kostenplaats_id)).map(p=>p.id);
       const fCount=functies.filter(f=>plIds.includes(f.productielijn_id)).length;
+      const kCount=kostenplaatsen.filter(k=>k.afdeling_id===a.id).length;
       return`<div class="card" onclick="renderKostenplaatsen('${a.id}')">
         <div class="card-icon" style="background:#0B1F3A12">${a.icon||'🏢'}</div>
         <div class="card-name">${a.naam}</div>
-        <div class="card-sub">${kostenplaatsen.filter(k=>k.afdeling_id===a.id).length} kostenplaats${kostenplaatsen.filter(k=>k.afdeling_id===a.id).length!==1?'en':''}</div>
+        <div class="card-sub">${kCount} kostenplaats${kCount!==1?'en':''}</div>
         <div class="card-badge">${fCount} functie${fCount!==1?'s':''}</div>
       </div>`;
     }).join('')+'</div>';
 }
 
 function renderKostenplaatsen(afdId){
-  nav.afd=afdelingen.find(a=>a.id===afdId);
-  nav.kp=null;nav.pl=null;nav.func=null;
-  setLevel(1);
-  setBc([{label:'Simian B.V.',fn:'renderOrganisatie()'},{label:nav.afd.naam}]);
+  nav.afd=afdelingen.find(a=>a.id===afdId);nav.kp=null;nav.pl=null;nav.func=null;
+  setLevel(1);setBc([{label:'Simian B.V.',fn:'renderOrganisatie()'},{label:nav.afd.naam}]);
   const kps=kostenplaatsen.filter(k=>k.afdeling_id===afdId);
   const c=document.getElementById('plat-content');
-  if(!kps.length){c.innerHTML='<p class="empty">Nog geen kostenplaatsen. Voeg ze toe via Beheer.</p>';return;}
+  if(!kps.length){c.innerHTML='<p class="empty">Nog geen kostenplaatsen.</p>';return;}
   c.innerHTML='<div class="section-title">Kostenplaatsen — '+nav.afd.naam+'</div><div class="card-grid">'+
     kps.map(k=>{
       const plIds=productielijnen.filter(p=>p.kostenplaats_id===k.id).map(p=>p.id);
       const fCount=functies.filter(f=>plIds.includes(f.productielijn_id)).length;
+      const pCount=productielijnen.filter(p=>p.kostenplaats_id===k.id).length;
       return`<div class="card" onclick="renderProductielijnen('${k.id}')">
         <div class="card-icon" style="background:#fff3c4">${k.icon||'📂'}</div>
         <div class="card-name">${k.naam}</div>
-        <div class="card-sub">${productielijnen.filter(p=>p.kostenplaats_id===k.id).length} productielijn${productielijnen.filter(p=>p.kostenplaats_id===k.id).length!==1?'en':''}</div>
+        <div class="card-sub">${pCount} productielijn${pCount!==1?'en':''}</div>
         <div class="card-badge">${fCount} functie${fCount!==1?'s':''}</div>
       </div>`;
     }).join('')+'</div>';
 }
 
 function renderProductielijnen(kpId){
-  nav.kp=kostenplaatsen.find(k=>k.id===kpId);
-  nav.pl=null;nav.func=null;
+  nav.kp=kostenplaatsen.find(k=>k.id===kpId);nav.pl=null;nav.func=null;
   setLevel(2);
-  setBc([
-    {label:'Simian B.V.',fn:'renderOrganisatie()'},
-    {label:nav.afd.naam,fn:`renderKostenplaatsen('${nav.afd.id}')`},
-    {label:nav.kp.naam}
-  ]);
+  setBc([{label:'Simian B.V.',fn:'renderOrganisatie()'},{label:nav.afd.naam,fn:`renderKostenplaatsen('${nav.afd.id}')`},{label:nav.kp.naam}]);
   const pls=productielijnen.filter(p=>p.kostenplaats_id===kpId);
   const c=document.getElementById('plat-content');
-  if(!pls.length){c.innerHTML='<p class="empty">Nog geen productielijnen. Voeg ze toe via Beheer.</p>';return;}
+  if(!pls.length){c.innerHTML='<p class="empty">Nog geen productielijnen.</p>';return;}
   c.innerHTML='<div class="section-title">Productielijnen — '+nav.kp.naam+'</div><div class="card-grid">'+
     pls.map(p=>{
       const fCount=functies.filter(f=>f.productielijn_id===p.id).length;
@@ -419,18 +385,12 @@ function renderProductielijnen(kpId){
 }
 
 function renderFuncties(plId){
-  nav.pl=productielijnen.find(p=>p.id===plId);
-  nav.func=null;
+  nav.pl=productielijnen.find(p=>p.id===plId);nav.func=null;
   setLevel(3);
-  setBc([
-    {label:'Simian B.V.',fn:'renderOrganisatie()'},
-    {label:nav.afd.naam,fn:`renderKostenplaatsen('${nav.afd.id}')`},
-    {label:nav.kp.naam,fn:`renderProductielijnen('${nav.kp.id}')`},
-    {label:nav.pl.naam}
-  ]);
+  setBc([{label:'Simian B.V.',fn:'renderOrganisatie()'},{label:nav.afd.naam,fn:`renderKostenplaatsen('${nav.afd.id}')`},{label:nav.kp.naam,fn:`renderProductielijnen('${nav.kp.id}')`},{label:nav.pl.naam}]);
   const fns=functies.filter(f=>f.productielijn_id===plId);
   const c=document.getElementById('plat-content');
-  if(!fns.length){c.innerHTML='<p class="empty">Nog geen functies voor deze productielijn. Voeg ze toe via Beheer.</p>';return;}
+  if(!fns.length){c.innerHTML='<p class="empty">Nog geen functies. Voeg ze toe via Beheer.</p>';return;}
   c.innerHTML='<div class="section-title">Functies — '+nav.pl.naam+'</div><div class="func-grid">'+
     fns.map(f=>{
       const s=schalen.find(sc=>sc.id===f.schaal_id)||{label:'—',aanloop:0,einde_schaal:0};
@@ -443,37 +403,16 @@ function renderFuncties(plId){
 }
 
 function renderDetail(funcId){
-  const func=functies.find(f=>String(f.id)===String(funcId));
-  if(!func)return;
-  nav.func=func;
-  setLevel(5);
-  setBc([
-    {label:'Simian B.V.',fn:'renderOrganisatie()'},
-    {label:nav.afd.naam,fn:`renderKostenplaatsen('${nav.afd.id}')`},
-    {label:nav.kp.naam,fn:`renderProductielijnen('${nav.kp.id}')`},
-    {label:nav.pl.naam,fn:`renderFuncties('${nav.pl.id}')`},
-    {label:func.naam}
-  ]);
+  const func=functies.find(f=>String(f.id)===String(funcId));if(!func)return;
+  nav.func=func;setLevel(5);
+  setBc([{label:'Simian B.V.',fn:'renderOrganisatie()'},{label:nav.afd.naam,fn:`renderKostenplaatsen('${nav.afd.id}')`},{label:nav.kp.naam,fn:`renderProductielijnen('${nav.kp.id}')`},{label:nav.pl.naam,fn:`renderFuncties('${nav.pl.id}')`},{label:func.naam}]);
   const s=schalen.find(sc=>sc.id===func.schaal_id)||{label:'—',aanloop:0,begin_schaal:0,einde_schaal:0};
-  const instrHtml=(func.instructies||'').split('\n').filter(Boolean).map((l,i)=>`
-    <div class="instr-step"><div class="sn">Stap ${i+1}</div>
-    <div class="st">${l.replace(/^\d+\.\s*/,'')}</div></div>`).join('')||'<p class="empty">Geen werkinstructies ingevoerd.</p>';
-  const normRows=(func.normen||'').split('|').filter(Boolean).map(n=>{
-    const p=n.split(':');
-    return`<tr><td>${(p[0]||'').trim()}</td><td><strong>${(p.slice(1).join(':'))||'—'}</strong></td></tr>`;
-  }).join('')||'<tr><td colspan="2" style="color:#aaa;padding:10px 12px">Geen normen ingevoerd.</td></tr>';
-  const shRows=schalen.map(sc=>`
-    <div class="sh-row"><div class="sh-lbl">${sc.label}</div><div class="sh-bars">
-      <div class="sh-bar ${sc.id===func.schaal_id?'on':'off'}">€${Number(sc.aanloop).toLocaleString('nl-NL')}</div>
-      <div class="sh-bar ${sc.id===func.schaal_id?'on':'off'}">€${Number(sc.begin_schaal).toLocaleString('nl-NL')}</div>
-      <div class="sh-bar ${sc.id===func.schaal_id?'on':'off'}">€${Number(sc.einde_schaal).toLocaleString('nl-NL')}</div>
-    </div></div>`).join('');
+  const instrHtml=(func.instructies||'').split('\n').filter(Boolean).map((l,i)=>`<div class="instr-step"><div class="sn">Stap ${i+1}</div><div class="st">${l.replace(/^\d+\.\s*/,'')}</div></div>`).join('')||'<p class="empty">Geen werkinstructies ingevoerd.</p>';
+  const normRows=(func.normen||'').split('|').filter(Boolean).map(n=>{const p=n.split(':');return`<tr><td>${(p[0]||'').trim()}</td><td><strong>${(p.slice(1).join(':'))||'—'}</strong></td></tr>`;}).join('')||'<tr><td colspan="2" style="color:#aaa;padding:10px 12px">Geen normen ingevoerd.</td></tr>';
+  const shRows=schalen.map(sc=>`<div class="sh-row"><div class="sh-lbl">${sc.label}</div><div class="sh-bars"><div class="sh-bar ${sc.id===func.schaal_id?'on':'off'}">€${Number(sc.aanloop).toLocaleString('nl-NL')}</div><div class="sh-bar ${sc.id===func.schaal_id?'on':'off'}">€${Number(sc.begin_schaal).toLocaleString('nl-NL')}</div><div class="sh-bar ${sc.id===func.schaal_id?'on':'off'}">€${Number(sc.einde_schaal).toLocaleString('nl-NL')}</div></div></div>`).join('');
   document.getElementById('plat-content').innerHTML=`
   <div class="detail-wrap">
-    <div class="detail-head">
-      <h2>${func.naam}</h2>
-      <p>${nav.afd.naam} › ${nav.kp.naam} › ${nav.pl.naam} · Niveau ${func.niveau} · ${s.label}</p>
-    </div>
+    <div class="detail-head"><h2>${func.naam}</h2><p>${nav.afd.naam} › ${nav.kp.naam} › ${nav.pl.naam} · Niveau ${func.niveau} · ${s.label}</p></div>
     <div class="detail-nav">
       <button class="dnav active" onclick="switchPane('profiel',this)">Profiel</button>
       <button class="dnav" onclick="switchPane('salaris',this)">Salaris</button>
@@ -500,10 +439,7 @@ function renderDetail(funcId){
       </div>
       <div id="pane-instructies" class="pane">${instrHtml}</div>
       <div id="pane-normen" class="pane"><table class="norm-tbl"><thead><tr><th>Norm</th><th>Target</th></tr></thead><tbody>${normRows}</tbody></table></div>
-      <div id="pane-competenties" class="pane">
-        ${COMPETENCIES.map(c=>`<div class="comp-item"><div class="comp-dot"></div>
-          <div><div class="comp-name">${c.name}</div><div class="comp-desc">${c.desc}</div></div></div>`).join('')}
-      </div>
+      <div id="pane-competenties" class="pane">${COMPETENCIES.map(c=>`<div class="comp-item"><div class="comp-dot"></div><div><div class="comp-name">${c.name}</div><div class="comp-desc">${c.desc}</div></div></div>`).join('')}</div>
     </div>
   </div>`;
 }
@@ -511,11 +447,9 @@ function renderDetail(funcId){
 function switchPane(name,btn){
   document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.dnav').forEach(b=>b.classList.remove('active'));
-  document.getElementById('pane-'+name).classList.add('active');
-  btn.classList.add('active');
+  document.getElementById('pane-'+name).classList.add('active');btn.classList.add('active');
 }
 
-// ---- SALARIS & SCHALEN ----
 function renderSalarishuis(){
   const c=document.getElementById('sh-body');
   const fmt=n=>Number(n).toLocaleString('nl-NL',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -524,8 +458,7 @@ function renderSalarishuis(){
       <div style="font-size:14px;font-weight:700">Salarisschalen Grafimedia CAO — Inschalingstabel Operations</div>
       <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:3px">Bedragen bruto per maand en per uur</div>
     </div>
-    <div style="overflow-x:auto">
-    <table style="width:100%;border-collapse:collapse;font-size:12px">
+    <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">
       <thead><tr style="background:#f8f9fa">
         <th style="padding:10px 14px;text-align:left;color:#888;font-size:11px;border-bottom:1px solid #e5e7eb">Groep</th>
         <th style="padding:10px 14px;text-align:left;color:#888;font-size:11px;border-bottom:1px solid #e5e7eb">Schaal</th>
@@ -558,8 +491,7 @@ function renderSalarishuis(){
 }
 
 function goToFunc(id){
-  const f=functies.find(fn=>String(fn.id)===String(id));
-  if(!f)return;
+  const f=functies.find(fn=>String(fn.id)===String(id));if(!f)return;
   nav.pl=productielijnen.find(p=>p.id===f.productielijn_id)||null;
   nav.kp=nav.pl?kostenplaatsen.find(k=>k.id===nav.pl.kostenplaats_id)||null:null;
   nav.afd=nav.kp?afdelingen.find(a=>a.id===nav.kp.afdeling_id)||null:null;
@@ -567,17 +499,13 @@ function goToFunc(id){
   setTimeout(()=>renderDetail(f.id),50);
 }
 
-// ---- ADMIN ----
 function fillAdminSelects(){
   const pkp=document.getElementById('pl-kp');
-  if(pkp) pkp.innerHTML=kostenplaatsen.map(k=>`<option value="${k.id}">${k.naam}</option>`).join('');
+  if(pkp)pkp.innerHTML=kostenplaatsen.map(k=>`<option value="${k.id}">${k.naam}</option>`).join('');
   const fpl=document.getElementById('f-pl');
-  if(fpl) fpl.innerHTML=productielijnen.map(p=>{
-    const k=kostenplaatsen.find(k=>k.id===p.kostenplaats_id);
-    return`<option value="${p.id}">${p.naam}${k?' ('+k.naam+')':''}`;
-  }).join('');
+  if(fpl)fpl.innerHTML=productielijnen.map(p=>{const k=kostenplaatsen.find(k=>k.id===p.kostenplaats_id);return`<option value="${p.id}">${p.naam}${k?' ('+k.naam+')':''}`;}).join('');
   const fsc=document.getElementById('f-schaal');
-  if(fsc) fsc.innerHTML=schalen.map(s=>`<option value="${s.id}">${s.label} · €${Number(s.aanloop).toLocaleString('nl-NL')}–€${Number(s.einde_schaal).toLocaleString('nl-NL')}</option>`).join('');
+  if(fsc)fsc.innerHTML=schalen.map(s=>`<option value="${s.id}">${s.label} · €${Number(s.aanloop).toLocaleString('nl-NL')}–€${Number(s.einde_schaal).toLocaleString('nl-NL')}</option>`).join('');
 }
 
 function renderAdminList(){
@@ -587,16 +515,8 @@ function renderAdminList(){
     const p=productielijnen.find(pl=>pl.id===f.productielijn_id)||{naam:'—'};
     const k=kostenplaatsen.find(kp=>kp.id===p.kostenplaats_id)||{naam:'—'};
     const s=schalen.find(sc=>sc.id===f.schaal_id)||{label:'—'};
-    return`<div class="func-row">
-      <div>
-        <div class="func-row-name">${f.naam}</div>
-        <div class="func-row-meta">${k.naam} › ${p.naam} · ${s.label} · Niveau ${f.niveau}</div>
-      </div>
-      <div style="display:flex;gap:6px">
-        <button class="btn-s" style="font-size:11px;padding:5px 10px" onclick="editFunc('${f.id}')">Bewerken</button>
-        <button class="btn-d" onclick="deleteFunc('${f.id}')">Verwijder</button>
-      </div>
-    </div>`;
+    return`<div class="func-row"><div><div class="func-row-name">${f.naam}</div><div class="func-row-meta">${k.naam} › ${p.naam} · ${s.label} · Niveau ${f.niveau}</div></div>
+      <div style="display:flex;gap:6px"><button class="btn-s" style="font-size:11px;padding:5px 10px" onclick="editFunc('${f.id}')">Bewerken</button><button class="btn-d" onclick="deleteFunc('${f.id}')">Verwijder</button></div></div>`;
   }).join('');
 }
 
@@ -604,7 +524,6 @@ async function savePL(){
   const naam=document.getElementById('pl-naam').value.trim();
   const errEl=document.getElementById('pl-error');errEl.innerHTML='';
   if(!naam){errEl.innerHTML='<div class="error-msg">Geef een naam op.</div>';return;}
-  if(API_URL==='JOUW_APPS_SCRIPT_URL_HIER'){errEl.innerHTML='<div class="error-msg">Vul eerst de API_URL in.</div>';return;}
   const payload={id:Date.now(),naam,kostenplaats_id:document.getElementById('pl-kp').value,icon:document.getElementById('pl-icon').value||'🏭'};
   const res=await api({},{action:'saveProductielijn',payload});
   if(res.error){errEl.innerHTML=`<div class="error-msg">${res.error}</div>`;return;}
@@ -615,16 +534,7 @@ async function saveFunc(){
   const naam=document.getElementById('f-naam').value.trim();
   const errEl=document.getElementById('func-error');errEl.innerHTML='';
   if(!naam){errEl.innerHTML='<div class="error-msg">Geef een functienaam op.</div>';return;}
-  if(API_URL==='JOUW_APPS_SCRIPT_URL_HIER'){errEl.innerHTML='<div class="error-msg">Vul eerst de API_URL in.</div>';return;}
-  const payload={
-    id:document.getElementById('f-id').value||Date.now(),
-    naam,productielijn_id:document.getElementById('f-pl').value,
-    niveau:document.getElementById('f-niveau').value,
-    schaal_id:document.getElementById('f-schaal').value,
-    profiel:document.getElementById('f-profiel').value,
-    instructies:document.getElementById('f-instr').value,
-    normen:document.getElementById('f-normen').value
-  };
+  const payload={id:document.getElementById('f-id').value||Date.now(),naam,productielijn_id:document.getElementById('f-pl').value,niveau:document.getElementById('f-niveau').value,schaal_id:document.getElementById('f-schaal').value,profiel:document.getElementById('f-profiel').value,instructies:document.getElementById('f-instr').value,normen:document.getElementById('f-normen').value};
   const res=await api({},{action:'saveFunctie',payload});
   if(res.error){errEl.innerHTML=`<div class="error-msg">${res.error}</div>`;return;}
   await loadAll();clearFunc();fillAdminSelects();renderAdminList();toast('Functie opgeslagen');
@@ -638,16 +548,11 @@ async function deleteFunc(id){
 }
 
 function editFunc(id){
-  const f=functies.find(fn=>String(fn.id)===String(id));
-  if(!f)return;
-  document.getElementById('f-id').value=f.id;
-  document.getElementById('f-naam').value=f.naam;
-  document.getElementById('f-pl').value=f.productielijn_id;
-  document.getElementById('f-niveau').value=f.niveau;
-  document.getElementById('f-schaal').value=f.schaal_id;
-  document.getElementById('f-profiel').value=f.profiel||'';
-  document.getElementById('f-instr').value=f.instructies||'';
-  document.getElementById('f-normen').value=f.normen||'';
+  const f=functies.find(fn=>String(fn.id)===String(id));if(!f)return;
+  document.getElementById('f-id').value=f.id;document.getElementById('f-naam').value=f.naam;
+  document.getElementById('f-pl').value=f.productielijn_id;document.getElementById('f-niveau').value=f.niveau;
+  document.getElementById('f-schaal').value=f.schaal_id;document.getElementById('f-profiel').value=f.profiel||'';
+  document.getElementById('f-instr').value=f.instructies||'';document.getElementById('f-normen').value=f.normen||'';
   switchTab('admin',document.querySelectorAll('.tab-btn')[2]);
   window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -658,31 +563,20 @@ function clearFunc(){['f-id','f-naam','f-profiel','f-instr','f-normen'].forEach(
 function switchTab(tab,btn){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('tab-'+tab).classList.add('active');
-  btn.classList.add('active');
-  if(tab==='salarishuis') renderSalarishuis();
+  document.getElementById('tab-'+tab).classList.add('active');btn.classList.add('active');
+  if(tab==='salarishuis')renderSalarishuis();
   if(tab==='admin'){fillAdminSelects();renderAdminList();}
-  if(tab==='plattegrond') renderOrganisatie();
+  if(tab==='plattegrond')renderOrganisatie();
 }
 
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';setTimeout(()=>t.style.display='none',3000);}
 
-// ---- LOGIN ----
 function doLogin(){
   const pw=document.getElementById('login-pw').value;
-  if(pw==='SalarishuisSimian'){
-    document.getElementById('login-overlay').style.display='none';
-    sessionStorage.setItem('simian_auth','1');
-  } else {
-    document.getElementById('login-error').style.display='block';
-    document.getElementById('login-pw').value='';
-    document.getElementById('login-pw').focus();
-  }
+  if(pw==='SalarishuisSimian'){document.getElementById('login-overlay').style.display='none';sessionStorage.setItem('simian_auth','1');}
+  else{document.getElementById('login-error').style.display='block';document.getElementById('login-pw').value='';document.getElementById('login-pw').focus();}
 }
-function checkAuth(){
-  if(sessionStorage.getItem('simian_auth')!=='1')
-    document.getElementById('login-overlay').style.display='flex';
-}
+function checkAuth(){if(sessionStorage.getItem('simian_auth')!=='1')document.getElementById('login-overlay').style.display='flex';}
 
 checkAuth();
 init();
