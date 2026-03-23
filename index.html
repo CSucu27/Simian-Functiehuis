@@ -241,6 +241,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <input id="f-opleiding" type="text" placeholder="Bijv. MBO niveau 2–3, technische richting">
       </div>
       <div class="fg" style="margin-bottom:12px">
+        <label>Link functieprofiel (Google Drive URL)</label>
+        <input id="f-docurl" type="text" placeholder="https://drive.google.com/...">
+      </div>
+      <div class="fg" style="margin-bottom:12px">
         <label>Werkinstructies (één per regel)</label>
         <textarea id="f-instr" placeholder="1. Controleer machinestatus&#10;2. Stel parameters in&#10;3. Registreer afwijkingen"></textarea>
       </div>
@@ -426,6 +430,7 @@ function renderDetail(funcId){
     </div>
     <div class="detail-body">
       <div id="pane-profiel" class="pane active">
+        ${func.document_url?`<div style="margin-bottom:18px"><a href="${func.document_url}" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;padding:9px 18px;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none">📄 Open functieprofiel</a><span style="font-size:11px;color:#aaa;margin-left:10px">Opent in Google Drive</span></div>`:''}
         <div class="field"><label>Functieprofiel</label><p>${func.profiel||'Nog niet ingevoerd.'}</p></div>
         <div class="field"><label>Afdeling</label><p>${nav.afd.naam}</p></div>
         <div class="field"><label>Kostenplaats</label><p>${nav.kp.naam}</p></div>
@@ -544,7 +549,7 @@ async function saveFunc(){
   const naam=document.getElementById('f-naam').value.trim();
   const errEl=document.getElementById('func-error');errEl.innerHTML='';
   if(!naam){errEl.innerHTML='<div class="error-msg">Geef een functienaam op.</div>';return;}
-  const payload={id:document.getElementById('f-id').value||Date.now(),naam,productielijn_id:document.getElementById('f-pl').value,niveau:document.getElementById('f-niveau').value,schaal_id:document.getElementById('f-schaal').value,profiel:document.getElementById('f-profiel').value,opleiding:document.getElementById('f-opleiding').value,instructies:document.getElementById('f-instr').value,normen:document.getElementById('f-normen').value};
+  const payload={id:document.getElementById('f-id').value||Date.now(),naam,productielijn_id:document.getElementById('f-pl').value,niveau:document.getElementById('f-niveau').value,schaal_id:document.getElementById('f-schaal').value,profiel:document.getElementById('f-profiel').value,opleiding:document.getElementById('f-opleiding').value,document_url:document.getElementById('f-docurl').value,instructies:document.getElementById('f-instr').value,normen:document.getElementById('f-normen').value};
   const res=await api({},{action:'saveFunctie',payload});
   if(res.error){errEl.innerHTML=`<div class="error-msg">${res.error}</div>`;return;}
   await loadAll();clearFunc();fillAdminSelects();renderAdminList();toast('Functie opgeslagen');
@@ -563,13 +568,14 @@ function editFunc(id){
   document.getElementById('f-pl').value=f.productielijn_id;document.getElementById('f-niveau').value=f.niveau;
   document.getElementById('f-schaal').value=f.schaal_id;document.getElementById('f-profiel').value=f.profiel||'';
   document.getElementById('f-opleiding').value=f.opleiding||'';
+  document.getElementById('f-docurl').value=f.document_url||'';
   document.getElementById('f-instr').value=f.instructies||'';document.getElementById('f-normen').value=f.normen||'';
   switchTab('admin',document.querySelectorAll('.tab-btn')[2]);
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
 function clearPL(){['pl-naam','pl-icon'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('pl-error').innerHTML='';}
-function clearFunc(){['f-id','f-naam','f-profiel','f-opleiding','f-instr','f-normen'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('func-error').innerHTML='';}
+function clearFunc(){['f-id','f-naam','f-profiel','f-opleiding','f-docurl','f-instr','f-normen'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('func-error').innerHTML='';}
 
 function switchTab(tab,btn){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
